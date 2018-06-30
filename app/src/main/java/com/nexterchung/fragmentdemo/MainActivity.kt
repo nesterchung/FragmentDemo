@@ -18,6 +18,7 @@ class MainActivity : AppCompatActivity(), AnkoLogger {
     init {
         fragments["one"] = FragmentOne::class.java
         fragments["two"] = FragmentTwo::class.java
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,19 +39,27 @@ class MainActivity : AppCompatActivity(), AnkoLogger {
 
     private fun switchToFragment(tag: String) {
         info { "switchToFragment $tag" }
+        val beginTransaction = supportFragmentManager.beginTransaction()
+        fragments.keys.filterNot {
+            it == tag
+        }.mapNotNull {
+            supportFragmentManager.findFragmentByTag(it)
+        }.forEach {
+            beginTransaction.hide(it)
+        }
+
         supportFragmentManager.findFragmentByTag(tag).let {
             if (it == null) {
-                supportFragmentManager.beginTransaction().add(R.id.content_fragment, fragments[tag]?.newInstance(), tag).commit()
+                beginTransaction.add(R.id.content_fragment, fragments[tag]?.newInstance(), tag).commit()
             } else {
-                supportFragmentManager.beginTransaction().show(it).commit()
+                beginTransaction.show(it).commit()
             }
         }
     }
 }
 
 
-open class BaseFragment : Fragment(), AnkoLogger {
-
+abstract class BaseFragment : Fragment(), AnkoLogger {
     override fun onAttach(context: Context?) {
         super.onAttach(context)
         info { "onAttach" }
@@ -65,6 +74,53 @@ open class BaseFragment : Fragment(), AnkoLogger {
         info { "onCreateView" }
         return super.onCreateView(inflater, container, savedInstanceState)
     }
+
+    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        info { "onViewCreated" }
+    }
+
+    override fun onDestroy() {
+        info { "onDestroy" }
+        super.onDestroy()
+    }
+
+    override fun onDestroyView() {
+        info { "onDestroyView" }
+        super.onDestroyView()
+    }
+
+    override fun onDetach() {
+        info { "onDetach" }
+        super.onDetach()
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        info { "onViewStateRestore" }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        info { "onPause" }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        info { "onStart" }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        info { "onResume" }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        info { "onStop" }
+    }
+
+
 }
 
 class FragmentOne : BaseFragment() {
